@@ -56,7 +56,7 @@ bulbak-crawler/
 # 필수 환경 변수
 FIRST_URL=https://realtime.kr/realtime/
 BASE_API_URL=http://localhost:3000/api
-CRAWL_INTERVAL_MINUTES=30
+CRAWL_INTERVAL_MINUTES=1
 ```
 
 ### 2. Chrome 드라이버 설치
@@ -87,10 +87,26 @@ pip install -r requirements.txt
 
 ### 3. 실행 방법
 
-#### 스케줄러 실행 (여러 크롤러 병렬 관리)
+#### A. 패키지로 설치하여 실행 (권장)
 
 ```bash
-python scheduler/runner.py
+# 1. 패키지 설치 (최초 1회만 실행)
+pip install -e .
+
+# 2. 실행
+bulbak-crawler
+```
+
+이 방법은 어느 디렉토리에서든 `bulbak-crawler` 명령어로 실행할 수 있습니다.
+
+#### B. 직접 실행
+
+```bash
+# 방법 1: PYTHONPATH 설정하여 실행
+PYTHONPATH=$PYTHONPATH:. python scheduler/runner.py
+
+# 방법 2: Python 모듈로 실행
+python -m scheduler.runner
 ```
 
 > 개별 크롤러만 실행하려면 `scheduler/jobs/*.py`에서 직접 `run()` 함수 호출 가능

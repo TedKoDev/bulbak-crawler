@@ -1,5 +1,5 @@
 import logging
-from sources.adfirst_selenium import get_adsensefarm_keywords
+from sources.realtime_selenium import get_first_source_keywords
 from utils.config import REALTIME_URL
 
 # 로깅 설정
@@ -19,7 +19,7 @@ def main():
 
     try:
         logging.info("크롤링을 시작합니다...")
-        data = get_adsensefarm_keywords()
+        data = get_first_source_keywords()
         
         for platform, keywords in data.items():
             logging.info(f"[{platform.upper()}] {len(keywords)}개의 키워드를 수집했습니다.")

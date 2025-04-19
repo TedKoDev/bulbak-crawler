@@ -16,7 +16,7 @@ def post_keywords_to_api(result: dict):
                 "collectedAt": now
             }
             try:
-                res = requests.post(f"{BASE_API_URL}/keywords", json=payload, timeout=10)
+                res = requests.post(f"{BASE_API_URL}/search-term", json=payload, timeout=10)
                 if res.status_code == 201:
                     logging.info(f"[{platform}] {rank}. '{keyword}' 저장 완료")
                 else:

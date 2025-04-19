@@ -29,5 +29,7 @@ except ValueError as e:
     raise
 
 # 환경 변수에서 값 가져오기
-REALTIME_URL = os.getenv("REALTIME_URL", "")
-CRAWL_INTERVAL_MINUTES = os.getenv("CRAWL_INTERVAL_MINUTES", "") 
+# ✅ 여기에 누락된 설정 추가
+BASE_API_URL = os.getenv("BASE_API_URL")
+REALTIME_URL = os.getenv("REALTIME_URL")
+CRAWL_INTERVAL_MINUTES = os.getenv("CRAWL_INTERVAL_MINUTES")
