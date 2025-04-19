@@ -7,7 +7,7 @@ load_dotenv()
 
 def validate_env_vars():
     required_vars = {
-        "FIRST_URL": "크롤링 대상 URL",
+        "REALTIME_URL": "크롤링 대상 URL",
         "CRAWL_INTERVAL_MINUTES": "크롤링 주기(분)"
     }
     
@@ -29,5 +29,5 @@ except ValueError as e:
     raise
 
 # 환경 변수에서 값 가져오기
-FIRST_URL = os.getenv("FIRST_URL", "")
+REALTIME_URL = os.getenv("REALTIME_URL", "")
 CRAWL_INTERVAL_MINUTES = os.getenv("CRAWL_INTERVAL_MINUTES", "") 

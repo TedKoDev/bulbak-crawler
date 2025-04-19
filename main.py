@@ -1,6 +1,6 @@
 import logging
 from sources.adfirst_selenium import get_adsensefarm_keywords
-from utils.config import FIRST_URL
+from utils.config import REALTIME_URL
 
 # 로깅 설정
 logging.basicConfig(
@@ -13,8 +13,8 @@ logging.basicConfig(
 )
 
 def main():
-    if not FIRST_URL:
-        logging.error("FIRST_URL 환경 변수가 설정되지 않았습니다.")
+    if not REALTIME_URL:
+        logging.error("REALTIME_URL 환경 변수가 설정되지 않았습니다.")
         return
 
     try:

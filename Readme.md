@@ -27,19 +27,23 @@ Zoom, Naver, Daum, Nate, Google Trends 등 다양한 포털에서 실시간 검�
 
 ```bash
 bulbak-crawler/
-├── venv/                  # Python 가상환경
-├── sources/               # 포털별 수집기 모듈
-│   └── adfirst_selenium.py # Selenium 기반 크롤러
+├── sources/               # 포털별 크롤링 모듈
+│   ├── realtime_selenium.py
+│   └── ...
+├── scheduler/             # 스케줄링 실행 엔진
+│   ├── runner.py          # 전체 스케줄 실행 루프
+│   ├── registry.py        # 크롤러별 실행 시간 등록
+│   └── jobs/              # 크롤러 실행 래퍼
+│       ├── realtime.py
+│       └── ...
 ├── utils/                 # 공통 유틸
-│   ├── __init__.py
-│   └── config.py         # 환경 변수 관리
-├── main.py               # 메인 실행 진입점
-├── scheduler.py          # 일정 기반 실행 관리
+│   ├── config.py          # 환경 변수 로딩
+│   ├── api.py             # API 연동 유틸
+│   └── __init__.py
 ├── .env                  # 환경변수 설정
 ├── requirements.txt      # 패키지 목록
-├── crawler.log          # 크롤러 로그
-├── scheduler.log        # 스케줄러 로그
-└── README.md            # 프로젝트 설명 파일
+├── README.md             # 프로젝트 설명 파일
+└── main.py               # (선택) 테스트 실행 진입점
 ```
 
 ---
@@ -50,8 +54,9 @@ bulbak-crawler/
 
 ```env
 # 필수 환경 변수
-FIRST_URL=http://localhost:3000/api   # 크롤링 대상 URL
-CRAWL_INTERVAL_MINUTES=30             # 크롤링 주기 (분)
+FIRST_URL=https://realtime.kr/realtime/
+BASE_API_URL=http://localhost:3000/api
+CRAWL_INTERVAL_MINUTES=30
 ```
 
 ### 2. Chrome 드라이버 설치
@@ -82,52 +87,43 @@ pip install -r requirements.txt
 
 ### 3. 실행 방법
 
-#### 단일 실행
+#### 스케줄러 실행 (여러 크롤러 병렬 관리)
 
 ```bash
-python main.py
+python scheduler/runner.py
 ```
 
-#### 스케줄러 실행 (주기적 크롤링)
-
-```bash
-python scheduler.py
-```
+> 개별 크롤러만 실행하려면 `scheduler/jobs/*.py`에서 직접 `run()` 함수 호출 가능
 
 ---
 
 ## 📊 로그 확인
 
-크롤러는 두 가지 로그 파일을 생성합니다:
+모든 로그는 콘솔과 파일로 동시에 출력됩니다.
 
-1. `crawler.log`: 크롤링 작업 관련 로그
-2. `scheduler.log`: 스케줄러 실행 관련 로그
-
-로그는 콘솔과 파일에 동시에 출력됩니다.
+- 각 크롤러용 로그 파일은 별도 지정 가능 (ex. `crawler.log`, `scheduler.log` 등)
 
 ---
 
 ## ✅ 크롤링 예시 결과
 
 ```
-[INFO] 2024-04-19 14:30:00 - 크롤링을 시작합니다...
-[INFO] 2024-04-19 14:30:03 - daum에서 10개의 키워드를 수집했습니다.
-[INFO] 2024-04-19 14:30:03 - zum에서 10개의 키워드를 수집했습니다.
-[INFO] 2024-04-19 14:30:03 - nate에서 10개의 키워드를 수집했습니다.
-[INFO] 2024-04-19 14:30:03 - googletrend에서 10개의 키워드를 수집했습니다.
-[INFO] 2024-04-19 14:30:03 - 크롤링이 완료되었습니다.
+[INFO] 2025-04-19 22:30:00 - 크롤링을 시작합니다...
+[INFO] 2025-04-19 22:30:03 - daum에서 10개의 키워드를 수집했습니다.
+[INFO] 2025-04-19 22:30:03 - zum에서 10개의 키워드를 수집했습니다.
+...
 ```
 
 ---
 
 ## 🛠️ 주요 기능
 
+- 멀티 크롤러 등록 및 스케줄 실행 분리
 - Selenium 기반 웹 크롤링
-- 자동 스케줄링
-- 상세 로깅
-- 환경 변수 기반 설정
-- 예외 처리 및 에러 복구
-- 리소스 자동 정리
+- 자동 스케줄링 처리 (`schedule.every(...)`)
+- 환경 변수 기반 설정 관리
+- 콘솔 + 파일 동시 로그 처리
+- 크롤링 결과 자동 DB 저장 (API 연동)
 
 ---
 
@@ -136,9 +132,10 @@ python scheduler.py
 - [x] 실시간 키워드 Selenium 기반 수집 구현
 - [x] 자동 스케줄링 시스템 구현
 - [x] 상세 로깅 시스템 구현
-- [ ] NestJS API 연동 POST 전송
+- [x] NestJS API 연동 POST 전송
 - [ ] 크롤링 결과 DB 저장 및 중복 필터링
 - [ ] 관리자 대시보드 연동
+- [ ] GPT 기반 콘텐츠 자동 작성
 
 ---
 

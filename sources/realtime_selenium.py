@@ -1,20 +1,29 @@
+# Selenium 및 BeautifulSoup 기반 실시간 키워드 수집기
+
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import WebDriverException, TimeoutException
 from bs4 import BeautifulSoup
 import time
 import logging
-from utils.config import FIRST_URL
+from utils.config import REALTIME_URL              # .env에서 설정한 수집 대상 URL
+from utils.api import post_keywords_to_api      # 수집된 데이터를 백엔드 API로 전송
 
+# 수집 대상 플랫폼 ID들 (HTML의 id 속성 기준)
 PLATFORMS = ["daum", "zum", "nate", "googletrend"]
 
-def get_adsensefarm_keywords():
-    if not FIRST_URL:
-        logging.error("FIRST_URL이 설정되지 않았습니다.")
+def get_first_source_keywords():
+    """
+    Selenium으로 지정된 URL에서 각 플랫폼별 실시간 키워드를 수집한다.
+    수집 실패 시 로깅하고 빈 딕셔너리 반환.
+    """
+    if not REALTIME_URL:
+        logging.error("REALTIME_URL이 설정되지 않았습니다.")
         return {}
 
+    # 브라우저 옵션 설정
     options = Options()
-    options.add_argument("--headless")
+    options.add_argument("--headless")  # 창 없이 실행
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
@@ -22,22 +31,26 @@ def get_adsensefarm_keywords():
 
     driver = None
     try:
+        # Chrome WebDriver 실행
         driver = webdriver.Chrome(options=options)
         driver.set_page_load_timeout(30)
-        driver.get(FIRST_URL)
+        driver.get(REALTIME_URL)
 
-        time.sleep(3)  # JS 로딩 대기
+        time.sleep(3)  # JavaScript가 키워드를 렌더링할 시간 확보
 
+        # 페이지 전체를 BeautifulSoup으로 파싱
         soup = BeautifulSoup(driver.page_source, "html.parser")
         result = {}
 
         for platform in PLATFORMS:
             try:
+                # 각 플랫폼의 검색어 박스를 찾음
                 section = soup.find("div", {"class": "item", "id": platform})
                 if not section:
                     logging.warning(f"{platform} 섹션을 찾을 수 없습니다.")
                     continue
 
+                # 각 키워드 텍스트 추출
                 keywords = [a.text.strip() for a in section.select("span.keyword > a")]
                 if not keywords:
                     logging.warning(f"{platform}에서 키워드를 찾을 수 없습니다.")
@@ -62,19 +75,24 @@ def get_adsensefarm_keywords():
         logging.error(f"예상치 못한 오류 발생: {str(e)}")
         return {}
     finally:
+        # 브라우저 종료
         if driver:
             try:
                 driver.quit()
             except:
                 pass
 
+# 🔍 수집 결과 콘솔 출력
 if __name__ == "__main__":
     from datetime import datetime
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{now}] Selenium 기반 키워드 수집 결과:")
 
-    data = get_adsensefarm_keywords()
+    data = get_first_source_keywords()
     for platform, keywords in data.items():
         print(f"\n[{platform.upper()}]")
         for i, keyword in enumerate(keywords, 1):
             print(f"{i}. {keyword}")
+
+    # 💾 수집 결과 백엔드 API로 전송
+    post_keywords_to_api(data)
