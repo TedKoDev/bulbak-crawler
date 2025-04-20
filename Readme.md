@@ -165,3 +165,102 @@ python -m scheduler.runner
 ---
 
 > "자동화는 정확한 수집에서 시작된다." — Bulbak Crawler
+
+## 기능
+
+- 외교부 채용정보 사이트에서 채용공고 크롤링
+- HWP 파일 다운로드 및 텍스트 추출
+- 크롤링 결과를 백엔드 API로 전송
+
+## 설치 방법
+
+1. 저장소 클론
+
+```bash
+git clone https://github.com/your-username/bulbak-crawler.git
+cd bulbak-crawler
+```
+
+2. 가상환경 생성 및 활성화
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# 또는
+.\venv\Scripts\activate  # Windows
+```
+
+3. 의존성 설치
+
+```bash
+pip install -r requirements.txt
+```
+
+4. HWP 처리 도구 설치
+
+```bash
+# macOS
+brew install hwp5html
+
+# Ubuntu/Debian
+sudo apt-get install hwp5html
+
+# Windows
+# https://github.com/hancom/hwp5html/releases 에서 다운로드 후 PATH에 추가
+```
+
+## 사용 방법
+
+1. 환경 변수 설정
+
+```bash
+cp .env.example .env
+# .env 파일을 수정하여 필요한 설정을 입력
+```
+
+2. 크롤러 실행
+
+```bash
+python sources/mofjab_selenium.py
+```
+
+## 주요 기능 설명
+
+### HWP 파일 처리
+
+- `hwp5html` 도구를 사용하여 HWP 파일을 HTML로 변환
+- BeautifulSoup을 사용하여 HTML에서 텍스트 추출
+- 추출된 텍스트는 정리되어 저장됨
+
+### 크롤링 프로세스
+
+1. 외교부 채용정보 사이트에서 채용공고 목록 수집
+2. 각 공고의 상세 페이지 방문
+3. HWP 파일이 있는 경우 다운로드 및 텍스트 추출
+4. 추출된 데이터를 백엔드 API로 전송
+
+## 파일 구조
+
+```
+bulbak-crawler/
+├── sources/
+│   └── mofjab_selenium.py  # 외교부 채용정보 크롤러
+├── utils/
+│   ├── api.py              # API 통신 모듈
+│   ├── config.py           # 설정 파일
+│   └── hwp_processor.py    # HWP 파일 처리 모듈
+├── downloads/              # 다운로드된 HWP 파일 저장
+├── conversion_temp/        # HWP 변환 임시 파일 저장
+├── requirements.txt        # Python 의존성
+└── README.md              # 프로젝트 설명
+```
+
+## 주의사항
+
+- HWP 파일 처리를 위해서는 `hwp5html` 도구가 시스템에 설치되어 있어야 합니다.
+- 크롤링 시 서버 부하를 고려하여 적절한 간격을 두고 실행하세요.
+- 채용공고의 저작권을 존중하여 수집된 데이터는 적절하게 사용하세요.
+
+## 라이선스
+
+MIT License

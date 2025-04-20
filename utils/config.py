@@ -8,6 +8,7 @@ load_dotenv()
 def validate_env_vars():
     required_vars = {
         "REALTIME_URL": "크롤링 대상 URL",
+        "MOFA_URL": "크롤링 대상 URL",
         "CRAWL_INTERVAL_MINUTES": "크롤링 주기(분)"
     }
     
@@ -32,4 +33,5 @@ except ValueError as e:
 # ✅ 여기에 누락된 설정 추가
 BASE_API_URL = os.getenv("BASE_API_URL")
 REALTIME_URL = os.getenv("REALTIME_URL")
+MOFA_URL = os.getenv("MOFA_URL")
 CRAWL_INTERVAL_MINUTES = os.getenv("CRAWL_INTERVAL_MINUTES")
