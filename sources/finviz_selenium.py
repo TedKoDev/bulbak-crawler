@@ -3,17 +3,17 @@ from playwright.async_api import async_playwright
 import time
 import os
 from datetime import datetime
-
+import requests
+from utils.api import get_s3_presigned_url
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
 
 # ✅ 오늘 날짜 기반 파일 이름 생성
 TODAY = datetime.now().strftime('%Y-%m-%d')
 IMAGE_PATH = f"finviz_map_{TODAY}.png"
 
-# ✅ Google Drive 폴더 ID
-FOLDER_ID = "1blggftdSN2IqKwhUN_EhffDFiPTTqSDD"
+# ✅ Google Sheets 설정
+SPREADSHEET_ID = "1D1BM4tC7xvpHJUlVJyQvFb1g3duMX7CS4YoEEY8d1v0"
 CREDENTIALS_JSON = "credentials.json"
 
 async def capture_canvas_screenshot():
@@ -78,20 +78,68 @@ async def capture_canvas_screenshot():
         print(f"❌ 에러 발생: {str(e)}")
         raise e
 
-def upload_to_drive(filename, folder_id):
-    SCOPES = ['https://www.googleapis.com/auth/drive']
-    creds = service_account.Credentials.from_service_account_file(CREDENTIALS_JSON, scopes=SCOPES)
-    service = build('drive', 'v3', credentials=creds)
+def upload_to_s3(filename):
+    try:
+        if not os.path.exists(filename):
+            raise Exception(f"File not found: {filename}")
+        
+        s3_key = f"finviz/{filename}"
+        
+        # Get presigned URL from backend
+        presigned_data = get_s3_presigned_url(s3_key)
+        
+        # Extract URLs
+        put_url = presigned_data['url']
+        get_url = f"https://beko-s3.s3.ap-northeast-2.amazonaws.com/{s3_key}"
+        
+        # Upload file using presigned URL
+        with open(filename, 'rb') as f:
+            headers = {'Content-Type': 'image/png'}
+            response = requests.put(put_url, data=f.read(), headers=headers)
+            
+            if response.status_code != 200:
+                raise Exception(f"Upload failed with status code: {response.status_code}")
+        
+        print(f"✅ S3 업로드 완료! URL: {get_url}")
+        return get_url
+    except Exception as e:
+        print(f"❌ S3 업로드 에러: {str(e)}")
+        raise e
 
-    file_metadata = {'name': filename, 'parents': [folder_id]}
-    media = MediaFileUpload(filename, mimetype='image/png')
-    uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-    print(f"✅ 업로드 완료! File ID: {uploaded_file.get('id')}")
+def update_google_sheet(image_url):
+    SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+    creds = service_account.Credentials.from_service_account_file(CREDENTIALS_JSON, scopes=SCOPES)
+    service = build('sheets', 'v4', credentials=creds)
+    
+    today = datetime.now().strftime('%Y-%m-%d')
+    values = [[today, image_url]]
+    
+    try:
+        # 첫 번째 빈 행 찾기
+        result = service.spreadsheets().values().get(
+            spreadsheetId=SPREADSHEET_ID,
+            range='finviz!A:B'
+        ).execute()
+        
+        next_row = len(result.get('values', [])) + 1
+        
+        # 새로운 행 추가
+        service.spreadsheets().values().update(
+            spreadsheetId=SPREADSHEET_ID,
+            range=f'finviz!A{next_row}:B{next_row}',
+            valueInputOption='USER_ENTERED',
+            body={'values': values}
+        ).execute()
+        print("✅ 스프레드시트 업데이트 완료")
+    except Exception as e:
+        print(f"❌ 스프레드시트 업데이트 에러: {str(e)}")
+        raise e
 
 async def main():
     try:
         await capture_canvas_screenshot()
-        upload_to_drive(IMAGE_PATH, FOLDER_ID)
+        image_url = upload_to_s3(IMAGE_PATH)
+        update_google_sheet(image_url)
     except Exception as e:
         print(f"❌ 프로그램 실행 중 에러 발생: {str(e)}")
     finally:

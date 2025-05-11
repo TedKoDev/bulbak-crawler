@@ -75,3 +75,28 @@ def post_crawled_data_to_api(results: list):
         except Exception as e:
             logging.error(f"[{payload['site']}] '{payload['title']}' 전송 오류: {str(e)}")
 
+def get_s3_presigned_url(key: str, content_type: str = 'image/png') -> dict:
+    """
+    S3 presigned URL을 백엔드로부터 받아옵니다.
+    """
+    try:
+        payload = {
+            "key": key,
+            "type": "put",
+            "contentType": content_type
+        }
+        res = requests.post(
+            f"{BASE_API_URL}/s3/presigned-url",
+            json=payload,
+            timeout=10
+        )
+        
+        if res.status_code == 201 or res.status_code == 200:
+            return res.json()
+        else:
+            logging.warning(f"Presigned URL 생성 실패 → {res.status_code}")
+            raise Exception(f"Failed to get presigned URL: {res.status_code}")
+    except Exception as e:
+        logging.error(f"Presigned URL 요청 오류: {str(e)}")
+        raise e
+
