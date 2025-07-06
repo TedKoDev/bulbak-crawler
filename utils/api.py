@@ -100,3 +100,85 @@ def get_s3_presigned_url(key: str, content_type: str = 'image/png') -> dict:
         logging.error(f"Presigned URL 요청 오류: {str(e)}")
         raise e
 
+def get_nasdaq_stocks():
+    """
+    나스닥 종목 목록을 가져옵니다.
+    """
+    try:
+        res = requests.get(f"{BASE_API_URL}/stocks/nasdaq", timeout=10)
+        if res.status_code == 200:
+            return res.json()
+        else:
+            logging.warning(f"나스닥 종목 목록 조회 실패 → {res.status_code}")
+            return []
+    except Exception as e:
+        logging.error(f"나스닥 종목 목록 요청 오류: {str(e)}")
+        return []
+
+def post_stock_data(stock_data: dict):
+    """
+    주식 데이터를 API로 전송합니다.
+    """
+    try:
+        res = requests.post(f"{BASE_API_URL}/stocks/us", json=stock_data, timeout=10)
+        if res.status_code == 201:
+            logging.info(f"[{stock_data['symbol']}] '{stock_data['name']}' 저장 완료")
+            return True
+        else:
+            logging.warning(f"[{stock_data['symbol']}] '{stock_data['name']}' 저장 실패 → {res.status_code}")
+            return False
+    except Exception as e:
+        logging.error(f"[{stock_data['symbol']}] '{stock_data['name']}' 전송 오류: {str(e)}")
+        return False
+
+def get_sp500_stocks():
+    """
+    S&P 500 종목 목록을 가져옵니다.
+    """
+    try:
+        res = requests.get(f"{BASE_API_URL}/stocks/sp500", timeout=10)
+        if res.status_code == 200:
+            return res.json()
+        else:
+            logging.warning(f"S&P 500 종목 목록 조회 실패 → {res.status_code}")
+            return []
+    except Exception as e:
+        logging.error(f"S&P 500 종목 목록 요청 오류: {str(e)}")
+        return []
+
+def post_stock_mapping(symbol: str, mapping_data: dict, is_sp500: bool = False):
+    """
+    주식 매핑 데이터를 API로 전송합니다.
+    
+    Args:
+        symbol (str): 미국 주식 심볼
+        mapping_data (dict): 매핑 데이터 (krName, krSymbol, reason)
+        is_sp500 (bool): S&P 500 종목 여부 (기본값: False)
+    """
+    try:
+        # DTO 형식에 맞게 payload 구성
+        payload = {
+            "krName": mapping_data["krName"],
+            "krSymbol": mapping_data["krSymbol"],
+            "reason": mapping_data["reason"],
+            "nasdaqSymbol": None if is_sp500 else symbol,
+            "sp500Symbol": symbol if is_sp500 else None,
+            "marketType": mapping_data["marketType"],
+            "correlationType": mapping_data["correlationType"]
+        }
+        
+        res = requests.post(
+            f"{BASE_API_URL}/stocks/kr-mappings",
+            json=payload,
+            timeout=10
+        )
+        if res.status_code == 201:
+            logging.info(f"[{symbol}] → {mapping_data['krName']} 매핑 저장 완료")
+            return True
+        else:
+            logging.warning(f"[{symbol}] → {mapping_data['krName']} 매핑 저장 실패 → {res.status_code}")
+            return False
+    except Exception as e:
+        logging.error(f"[{symbol}] → {mapping_data['krName']} 매핑 전송 오류: {str(e)}")
+        return False
+

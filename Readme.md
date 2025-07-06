@@ -264,3 +264,45 @@ bulbak-crawler/
 ## 라이선스
 
 MIT License
+
+# Finviz Map 캡처 및 Google Drive 업로드
+
+이 프로그램은 Finviz의 시장 맵을 자동으로 캡처하여 Google Drive에 업로드합니다.
+
+## 설치 방법
+
+1. 필요한 패키지 설치:
+```bash
+pip install -r requirements.txt
+```
+
+## Google Cloud 설정
+
+1. [Google Cloud Console](https://console.cloud.google.com/)에 접속
+2. 새 프로젝트 생성 또는 기존 프로젝트 선택
+3. Google Drive API 활성화
+4. 서비스 계정 생성:
+   - IAM & 관리 > 서비스 계정 메뉴로 이동
+   - "서비스 계정 만들기" 클릭
+   - 서비스 계정 세부정보 입력
+   - 역할: "편집자" 선택
+   - 완료 후 키 생성 (JSON 형식)
+5. 다운로드 받은 JSON 키 파일을 프로젝트 루트 디렉토리에 `credentials.json`으로 저장
+
+## Google Drive 설정
+
+1. Google Drive에서 스크린샷을 저장할 폴더 생성
+2. 폴더 URL에서 폴더 ID 복사 (URL의 마지막 부분)
+3. `sources/finviz_selenium.py` 파일의 `FOLDER_ID` 변수에 복사한 ID 입력
+
+## 실행 방법
+
+```bash
+python sources/finviz_selenium.py
+```
+
+## 주의사항
+
+- 프로그램이 정상적으로 실행되려면 Chrome 브라우저가 설치되어 있어야 합니다.
+- 처음 실행 시 Chrome WebDriver가 자동으로 설치됩니다.
+- Google Drive API 할당량에 주의하세요.
