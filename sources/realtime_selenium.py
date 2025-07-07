@@ -21,22 +21,39 @@ def get_first_source_keywords():
         logging.error("REALTIME_URL이 설정되지 않았습니다.")
         return {}
 
-    # 브라우저 옵션 설정
+    # 브라우저 옵션 설정 (봇 감지 회피)
     options = Options()
     options.add_argument("--headless")  # 창 없이 실행
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
+    
+    # 봇 감지 회피를 위한 추가 옵션
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--disable-extensions")
+    options.add_argument("--no-first-run")
+    options.add_argument("--disable-default-apps")
+    options.add_argument("--disable-infobars")
+    
+    # 실제 브라우저처럼 보이도록 User-Agent 설정
+    options.add_argument("--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36")
 
     driver = None
     try:
         # Chrome WebDriver 실행
         driver = webdriver.Chrome(options=options)
+        
+        # 봇 감지 회피를 위한 추가 설정
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
+        })
+        
         driver.set_page_load_timeout(30)
         driver.get(REALTIME_URL)
 
-        time.sleep(3)  # JavaScript가 키워드를 렌더링할 시간 확보
+        time.sleep(5)  # JavaScript가 키워드를 렌더링할 시간 확보
 
         # 페이지 전체를 BeautifulSoup으로 파싱
         soup = BeautifulSoup(driver.page_source, "html.parser")

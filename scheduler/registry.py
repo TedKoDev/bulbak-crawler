@@ -11,7 +11,7 @@ def register_jobs():
     """크롤러별 실행 시간 등록 (EC2 UTC 기준)"""
     
     # 실시간 검색어 크롤러 (매 10분마다)
-    schedule.every(10).minutes.do(run)
+    schedule.every(1).minutes.do(run)
     
     # # 외교부 채용정보 크롤러 (매일 오전 9시, 오후 9시)
     # schedule.every().day.at("09:00").do(run_mofa_crawler)

@@ -14,7 +14,7 @@ IMAGE_PATH = f"finviz_map_{TODAY}.png"
 
 # ✅ Google Sheets 설정
 SPREADSHEET_ID = "1D1BM4tC7xvpHJUlVJyQvFb1g3duMX7CS4YoEEY8d1v0"
-CREDENTIALS_JSON = "credentials.json"
+CREDENTIALS_JSON = os.path.join(os.path.dirname(os.path.abspath(__file__)), "credentials.json")
 
 async def capture_canvas_screenshot():
     try:
@@ -22,7 +22,7 @@ async def capture_canvas_screenshot():
             os.remove(IMAGE_PATH)
             
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
+            browser = await p.chromium.launch(headless=True)
             context = await browser.new_context(
                 viewport={'width': 1200, 'height': 800},
                 user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36'
