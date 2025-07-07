@@ -18,7 +18,7 @@ def register_jobs():
     # schedule.every().day.at("21:00").do(run_mofa_crawler)
     
     # 외교부 채용정보 크롤러 (한국 시간 오전 6시 = UTC 21:00)
-    schedule.every().day.at("21:00").do(run_mofa_crawler)
+    # schedule.every().day.at("21:00").do(run_mofa_crawler)
     
     # Finviz 히트맵 캡처 (한국 시간 오전 6시 5분 = UTC 21:05)
     schedule.every().day.at("21:05").do(run_finviz)
