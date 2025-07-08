@@ -1,0 +1,6 @@
+nohup: ignoring input
+Traceback (most recent call last):
+  File "/home/ubuntu/bulbak-crawler/scheduler/runner.py", line 5, in <module>
+    from scheduler.registry import register_jobs  # 절대 경로만 사용
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'scheduler'
